@@ -1,5 +1,5 @@
 # Statusbar7
-Windows Explorer status bar extension which shows selected files' total size.
+Windows Explorer browser helper which shows selected files' total size in status bar.
 
 ![StatusBar7 in action](https://github.com/T800G/StatusBar7/blob/master/StatusBar7%20screenshot.png)
 
