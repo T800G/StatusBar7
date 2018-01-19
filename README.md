@@ -1,4 +1,4 @@
-# Statusbar7
+# StatusBar7
 Windows Explorer browser helper which shows selected files' total size in status bar.
 
 ![StatusBar7 in action](https://github.com/T800G/StatusBar7/blob/master/StatusBar7%20screenshot.png)
