@@ -1,0 +1,49 @@
+HKLM
+{
+	NoRemove Software
+	{
+		NoRemove Classes
+		{
+			StatusBar7.ExplorerBHO.1 = s 'StatusBar7 ExplorerBHO Class'
+			{
+				CLSID = s '{87364BBC-35DB-4a34-8D86-C08B604C6CE3}'
+			}
+			StatusBar7.ExplorerBHO = s 'StatusBar7 ExplorerBHO Class'
+			{
+				CLSID = s '{87364BBC-35DB-4a34-8D86-C08B604C6CE3}'
+			}
+			NoRemove CLSID
+			{
+				ForceRemove {87364BBC-35DB-4a34-8D86-C08B604C6CE3} = s 'StatusBar7 ExplorerBHO Class'
+				{
+					ProgID = s 'StatusBar7.ExplorerBHO.1'
+					VersionIndependentProgID = s 'StatusBar7.ExplorerBHO'
+					InprocServer32 = s '%MODULE%'
+					{
+						val ThreadingModel = s 'Apartment'
+					}
+				}
+			}	
+		}
+
+		NoRemove Microsoft
+		{
+			NoRemove Windows
+			{
+				NoRemove CurrentVersion
+				{
+					NoRemove Explorer
+					{
+						NoRemove 'Browser Helper Objects'
+						{
+							ForceRemove {87364BBC-35DB-4a34-8D86-C08B604C6CE3}
+							{
+								val NoInternetExplorer = d '1'
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,40 @@
+// StatusBar7.idl : IDL source for StatusBar7.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (StatusBar7.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+	
+	[
+		object,
+		uuid(69D46B17-56B9-4429-9116-1033F7F1CE37),
+		dual,
+		helpstring("IExplorerBHO Interface"),
+		pointer_default(unique)
+	]
+	interface IExplorerBHO : IDispatch
+	{
+	};
+
+[
+	uuid(9B535266-F6F0-42ab-86EC-7EEBCD504897),
+	version(1.0),
+	helpstring("StatusBar7 1.0 Type Library")
+]
+library STATUSBAR7Lib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	
+	[
+		uuid(87364BBC-35DB-4a34-8D86-C08B604C6CE3),
+		helpstring("ExplorerBHO Class")
+	]
+	coclass ExplorerBHO
+	{
+		[default] interface IExplorerBHO;
+	};
+};
