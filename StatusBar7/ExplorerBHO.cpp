@@ -4,6 +4,7 @@
 #include "StatusBar7.h"
 #include "ExplorerBHO.h"
 #include "helpers.h"
+#include "debugtrace.h"
 
 #define SBTXTBUFLEN 256//1024
 #define SBDELAY 50
@@ -34,28 +35,27 @@ LRESULT CALLBACK WindowSubClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 LRESULT CExplorerBHO::WndSubClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass)
 {
-	if (uMsg==SB_SETTEXT && LOBYTE(LOWORD(wParam))!=255) //255 /shell context menu is active (shows menuitem descriptions in StatusBar)
+	if (uMsg==SB_SETTEXT && LOBYTE(LOWORD(wParam)) != SB_SIMPLEID) //255 /shell context menu is active (shows menuitem descriptions in StatusBar)
 	{
 		//ATLTRACE(L"SB_SETTEXT hWnd=%x HIBYTE=%d LOBYTE=%d lParam=%ws\n",hWnd,HIBYTE(LOWORD(wParam)),LOBYTE(LOWORD(wParam)),lParam);
-		if (HIBYTE(LOWORD(wParam))!=SBT_OWNERDRAW)
+		if (HIBYTE(LOWORD(wParam)) != SBT_OWNERDRAW)
 		{
-			if SUCCEEDED(StringCchCopy(g_SBText, SBTXTBUFLEN, (LPCTSTR)lParam))
-				SetTimer(m_hwStatusBar, (UINT_PTR)m_hwStatusBar, SBDELAY, NULL);
+			SetTimer(hWnd, (UINT_PTR)hWnd, SBDELAY, NULL);
 		}
 	}
 
-	if (uMsg==WM_TIMER && wParam==(WPARAM)m_hwStatusBar)
+	if (uMsg == WM_TIMER && wParam == (WPARAM)hWnd)
 	{
 		KillTimer(hWnd,wParam);
-		__int64 size=-1;
+		__int64 size = -1;
 		CComPtr<IShellView> pShellView;
 		if SUCCEEDED(m_pShellBrowser->QueryActiveShellView(&pShellView))
 		{
-			CComQIPtr<IFolderView> pFolderView=pShellView;
+			CComQIPtr<IFolderView> pFolderView = pShellView;
 			CComPtr<IPersistFolder2> pPersistFolder2;
 			if (pFolderView && SUCCEEDED(pFolderView->GetFolder(IID_IPersistFolder2,(void**)&pPersistFolder2)))
 			{
-				CComQIPtr<IShellFolder2> pShellFolder2=pPersistFolder2;
+				CComQIPtr<IShellFolder2> pShellFolder2 = pPersistFolder2;
 				int count;
 				if (pShellFolder2 && SUCCEEDED(pFolderView->ItemCount(SVGIO_SELECTION,&count)) && count)
 				{
@@ -64,14 +64,14 @@ LRESULT CExplorerBHO::WndSubClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					if (SUCCEEDED(pFolderView->Items(SVGIO_SELECTION,IID_IEnumIDList,(void**)&pEnum)) && pEnum)
 					{
 						PITEMID_CHILD pidc;
-						SHCOLUMNID scid={PSGUID_STORAGE,PID_STG_SIZE};
-						while (pEnum->Next(1,&pidc,NULL)==S_OK)
+						SHCOLUMNID scid = {PSGUID_STORAGE,PID_STG_SIZE};
+						while (pEnum->Next(1,&pidc,NULL) == S_OK)
 						{
 							CComVariant cvt;
-							if (SUCCEEDED(pShellFolder2->GetDetailsEx(pidc,&scid,&cvt)) && cvt.vt==VT_UI8)
+							if (SUCCEEDED(pShellFolder2->GetDetailsEx(pidc,&scid,&cvt)) && cvt.vt == VT_UI8)
 							{
-								if (size<0) size=cvt.ullVal;
-								else size+=cvt.ullVal;
+								if (size < 0) size = cvt.ullVal;
+								else size += cvt.ullVal;
 							}
 							ILFree(pidc);
 						}
@@ -81,16 +81,20 @@ LRESULT CExplorerBHO::WndSubClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		}
 
 		ATLTRACE("selection size=%d\n", size);
-		if (size>=0)
+		if (size >= 0)
 		{
-			// format the file size as KB, MB, etc
-			wchar_t pbuf[SBTXTBUFLEN];
-			if (StrFormatByteSizeW(size,pbuf,SBTXTBUFLEN))
+			SecureZeroMemory(g_SBText, sizeof(wchar_t)*SBTXTBUFLEN);
+			if (GetWindowText(hWnd, g_SBText, SBTXTBUFLEN))
 			{
-				//ATLTRACE(L"(%ws)\n",pbuf);
-				wchar_t pNew[SBTXTBUFLEN];
-				if SUCCEEDED(StringCchPrintfW(pNew, SBTXTBUFLEN, _T("%s  (%s)"), g_SBText, pbuf))
-					SendMessage(m_hwStatusBar, WM_SETTEXT, NULL, (LPARAM)((wchar_t*)pNew));
+				// format the file size as KB, MB, etc
+				wchar_t pbuf[SBTXTBUFLEN];
+				if (StrFormatByteSizeW(size,pbuf,SBTXTBUFLEN))
+				{
+					//ATLTRACE(L"(%ws)\n",pbuf);
+					wchar_t pNew[SBTXTBUFLEN];
+					if SUCCEEDED(StringCchPrintfW(pNew, SBTXTBUFLEN, _T("%s  (%s)"), g_SBText, pbuf))
+						SendMessage(hWnd, WM_SETTEXT, NULL, (LPARAM)((wchar_t*)pNew));
+				}			
 			}
 		}
 	}
